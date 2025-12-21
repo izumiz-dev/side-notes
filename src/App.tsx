@@ -27,7 +27,7 @@ function KebabMenu({ items, title = "Menu" }: { items: MenuItem[], title?: strin
 
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
         title={title}
@@ -39,7 +39,7 @@ function KebabMenu({ items, title = "Menu" }: { items: MenuItem[], title?: strin
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
           <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 py-1">
             {items.map((item, i) => (
-              <button 
+              <button
                 key={i}
                 onClick={() => {
                   setIsOpen(false);
@@ -61,12 +61,28 @@ function KebabMenu({ items, title = "Menu" }: { items: MenuItem[], title?: strin
   );
 }
 
+const ALERT_ICONS: Record<string, string> = {
+  note: '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>',
+  tip: '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848l.213-.253c.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>',
+  important: '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.75.75 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>',
+  warning: '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>',
+  caution: '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>'
+};
+
+const ALERT_TITLES: Record<string, string> = {
+  note: 'Note',
+  tip: 'Tip',
+  important: 'Important',
+  warning: 'Warning',
+  caution: 'Caution'
+};
+
 function App() {
   const { domain, url, title } = useCurrentDomain();
   const [viewMode, setViewMode] = useState<'domain' | 'all'>('domain');
   const { memos, activeMemo, setActiveMemoId, createMemo, updateMemo, deleteMemo } = useMemos(domain, url, title, viewMode);
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
-  
+
   // Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('sidebarOpen');
@@ -102,8 +118,8 @@ function App() {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
-      e.preventDefault(); 
-      
+      e.preventDefault();
+
       const newWidth = Math.max(150, Math.min(e.clientX, 600));
       if (sidebarRef.current) {
         sidebarRef.current.style.width = `${newWidth}px`;
@@ -112,11 +128,11 @@ function App() {
 
     const handleMouseUp = () => {
       if (!isResizing) return;
-      
+
       setIsResizing(false);
       document.body.style.cursor = 'default';
       document.body.style.userSelect = 'auto';
-      
+
       const newWidth = sidebarRef.current ? sidebarRef.current.offsetWidth : sidebarWidth;
       setSidebarWidth(newWidth);
     };
@@ -134,13 +150,13 @@ function App() {
     };
   }, [isResizing, sidebarWidth]);
 
-  // Theme & Security
+  // Theme & Security & Marked Config
   useEffect(() => {
     const match = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
     match.addEventListener('change', handler);
 
-    // Security: Force links to open in new tab and add security attributes
+    // Force links to open in new tab
     DOMPurify.addHook('afterSanitizeAttributes', (node) => {
       if (node.tagName === 'A') {
         node.setAttribute('target', '_blank');
@@ -148,48 +164,26 @@ function App() {
       }
     });
 
-    // GitHub Alerts Hook
-    DOMPurify.addHook('afterSanitizeElements', (node) => {
-      // Ensure node is an Element
-      if (!(node instanceof Element)) return;
+    // Configure marked with GitHub Alerts support
+    marked.use({
+      renderer: {
+        // eslint-disable-next-line react-hooks/unsupported-syntax, @typescript-eslint/no-explicit-any
+        blockquote(this: any, { tokens }: any) {
+          const body = this.parser.parse(tokens);
+          // GitHub Alerts use [!NOTE] syntax (exclamation inside brackets)
+          const match = body.match(/^<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
 
-      if (node.tagName === 'BLOCKQUOTE') {
-        const p = node.querySelector('p');
-        if (!p) return;
-
-        const content = p.innerHTML;
-        const match = content.match(/^\\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]/i);
-
-        if (match) {
-          const type = match[1].toLowerCase();
-          node.classList.add('markdown-alert', `markdown-alert-${type}`);
-          
-          // Remove the [!TYPE] marker (and following newline/br if any)
-          p.innerHTML = content.replace(/^\\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]\\s*(<br>)?/i, '');
-
-          // Create Title Element
-          const titleDiv = document.createElement('div');
-          titleDiv.className = 'markdown-alert-title';
-          
-          // Icons
-          const icons: Record<string, string> = {
-            note: '<svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>',
-            tip: '<svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.386.586.83 1.075 1.5a.75.75 0 0 1-1.212.883C5.166 10.314 5 10 5 10a.75.75 0 0 1 0-1.5h.001c.033-.002.11-.034.348-.198.053-.034.124-.088.2-.176.23-.265.41-.49.578-.688l.219-.252c.68-.822 1.154-1.572 1.154-2.436 0-1.248-.992-2.25-2.5-2.25S2.5 3.502 2.5 4.75a.75.75 0 0 1-1.5 0C1 2.69 3.44 0 8 0s7 2.69 7 4.75c0 1.975-.75 3.313-2.075 4.727l-.27.23c-.31.27-.63.53-.88.79-.37.38-.75.79-1.075 1.5a.75.75 0 0 1-1.212-.883c.49-.67.79-1.114 1.075-1.5.25-.26.57-.52.88-.79l.27-.23c1.07-1.14 1.575-2.126 1.575-3.594 0-2.06-1.637-3.75-4-3.75ZM7 15.5a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z"></path></svg>',
-            important: '<svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.75.75 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>',
-            warning: '<svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>',
-            caution: '<svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>'
-          };
-
-          const titles: Record<string, string> = {
-            note: 'Note',
-            tip: 'Tip',
-            important: 'Important',
-            warning: 'Warning',
-            caution: 'Caution'
-          };
-
-          titleDiv.innerHTML = `${icons[type] || ''} ${titles[type] || type.toUpperCase()}`;
-          node.insertBefore(titleDiv, node.firstChild);
+          if (match) {
+            const type = match[1].toLowerCase();
+            const content = body.replace(/^<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(<br>)?/i, '<p>');
+            return `
+              <div class="markdown-alert markdown-alert-${type}">
+                <div class="markdown-alert-title">${ALERT_ICONS[type]} ${ALERT_TITLES[type]}</div>
+                ${content}
+              </div>
+            `;
+          }
+          return `<blockquote>${body}</blockquote>`;
         }
       }
     });
@@ -340,7 +334,7 @@ function App() {
       const frontMatter = match[1];
       const rows = frontMatter.split('\n').filter(line => line.trim() !== '');
       let tableHtml = '<table class="front-matter-table mb-4 border-collapse w-full text-sm"><tbody>';
-      
+
       rows.forEach(row => {
         const parts = row.split(':');
         if (parts.length >= 2) {
@@ -349,15 +343,17 @@ function App() {
           tableHtml += `<tr class="border-b border-gray-200 dark:border-gray-700"><td class="py-1 pr-2 font-semibold text-gray-600 dark:text-gray-400 select-none w-24">${key}</td><td class="py-1 text-gray-800 dark:text-gray-200 break-all">${value}</td></tr>`;
         }
       });
-      
+
       tableHtml += '</tbody></table>';
       processedContent = content.replace(frontMatterRegex, tableHtml);
     }
 
     const rawMarkup = marked.parse(processedContent);
-    return { __html: DOMPurify.sanitize(rawMarkup as string, {
-      ADD_ATTR: ['target', 'rel'],
-    }) };
+    return {
+      __html: DOMPurify.sanitize(rawMarkup as string, {
+        ADD_ATTR: ['target', 'rel'],
+      })
+    };
   };
 
   const getFontStyle = (): React.CSSProperties => {
@@ -381,64 +377,64 @@ function App() {
   return (
     <div className={cn("flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden", isDarkMode ? 'dark' : '')}>
       {/* Sidebar (Memo List) */}
-      <div 
+      <div
         ref={sidebarRef}
         className={cn(
           "flex flex-col border-r border-gray-200 dark:border-gray-700 relative group",
-          !isResizing && "transition-all duration-300", 
+          !isResizing && "transition-all duration-300",
           !sidebarOpen && "w-0 overflow-hidden border-none"
         )}
         style={{ width: sidebarOpen ? sidebarWidth : 0 }}
       >
-         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-            <h2 className="font-bold text-sm truncate" style={{ width: Math.max(0, sidebarWidth - 64) }} title={viewMode === 'all' ? 'All Notes' : (domain || '')}>
-              {viewMode === 'all' ? 'All Notes' : (domain || 'No context')}
-            </h2>
-            <KebabMenu 
-              items={[
-                { 
-                  label: "New Note", 
-                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
-                  onClick: createMemo 
-                },
-                { 
-                  label: viewMode === 'all' ? "View Domain Notes" : "View All Notes", 
-                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
-                  onClick: () => setViewMode(viewMode === 'all' ? 'domain' : 'all') 
-                },
-                { 
-                  label: "Settings", 
-                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
-                  onClick: () => chrome.runtime.openOptionsPage() 
-                }
-              ]}
-            />
-         </div>
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
+          <h2 className="font-bold text-sm truncate" style={{ width: Math.max(0, sidebarWidth - 64) }} title={viewMode === 'all' ? 'All Notes' : (domain || '')}>
+            {viewMode === 'all' ? 'All Notes' : (domain || 'No context')}
+          </h2>
+          <KebabMenu
+            items={[
+              {
+                label: "New Note",
+                icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+                onClick: createMemo
+              },
+              {
+                label: viewMode === 'all' ? "View Domain Notes" : "View All Notes",
+                icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
+                onClick: () => setViewMode(viewMode === 'all' ? 'domain' : 'all')
+              },
+              {
+                label: "Settings",
+                icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
+                onClick: () => chrome.runtime.openOptionsPage()
+              }
+            ]}
+          />
+        </div>
 
-         <div className="flex-1 overflow-y-auto">
-            {memos.map(memo => (
-              <div 
-                key={memo.id}
-                onClick={() => setActiveMemoId(memo.id)}
-                className={cn("p-3 cursor-pointer border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800", activeMemo?.id === memo.id && "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500")}
-              >
-                <div className="font-medium text-sm truncate">{memo.title || "Untitled"}</div>
-                <div className="flex justify-between items-center mt-1">
-                  <div className="text-[10px] text-gray-400 truncate flex-1 mr-2">{viewMode === 'all' ? memo.domain : new Date(memo.updatedAt).toLocaleDateString()}</div>
-                  {viewMode === 'all' && <div className="text-[10px] text-gray-300">{new Date(memo.updatedAt).toLocaleDateString()}</div>}
-                </div>
+        <div className="flex-1 overflow-y-auto">
+          {memos.map(memo => (
+            <div
+              key={memo.id}
+              onClick={() => setActiveMemoId(memo.id)}
+              className={cn("p-3 cursor-pointer border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800", activeMemo?.id === memo.id && "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500")}
+            >
+              <div className="font-medium text-sm truncate">{memo.title || "Untitled"}</div>
+              <div className="flex justify-between items-center mt-1">
+                <div className="text-[10px] text-gray-400 truncate flex-1 mr-2">{viewMode === 'all' ? memo.domain : new Date(memo.updatedAt).toLocaleDateString()}</div>
+                {viewMode === 'all' && <div className="text-[10px] text-gray-300">{new Date(memo.updatedAt).toLocaleDateString()}</div>}
               </div>
-            ))}
-            {memos.length === 0 && (
-              <div className="p-4 text-center text-gray-400 text-sm">No notes found.</div>
-            )}
-         </div>
-         
-         {/* Resize Handle */}
-         <div
-            className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 transition-colors z-50"
-            onMouseDown={() => setIsResizing(true)}
-         />
+            </div>
+          ))}
+          {memos.length === 0 && (
+            <div className="p-4 text-center text-gray-400 text-sm">No notes found.</div>
+          )}
+        </div>
+
+        {/* Resize Handle */}
+        <div
+          className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 transition-colors z-50"
+          onMouseDown={() => setIsResizing(true)}
+        />
       </div>
 
       {/* Main Area */}
@@ -447,76 +443,76 @@ function App() {
         <div className="h-12 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 bg-white dark:bg-gray-900 z-10 shrink-0">
           <div className="flex items-center gap-2 flex-1 mr-2">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-               {sidebarOpen ? 
-                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg> : 
-                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg> 
-               }
+              {sidebarOpen ?
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg> :
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+              }
             </button>
             {activeMemo && (
-               <input 
-                 type="text" 
-                 value={activeMemo.title} 
-                 onChange={handleTitleChange} 
-                 className="bg-transparent font-semibold focus:outline-none text-gray-800 dark:text-gray-100 w-full min-w-0"
-                 placeholder="Note Title"
-               />
+              <input
+                type="text"
+                value={activeMemo.title}
+                onChange={handleTitleChange}
+                className="bg-transparent font-semibold focus:outline-none text-gray-800 dark:text-gray-100 w-full min-w-0"
+                placeholder="Note Title"
+              />
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0 relative">
-             <button 
-               onClick={() => setMode(mode === 'edit' ? 'preview' : 'edit')}
-               className="text-xs font-medium px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
-             >
-               {mode === 'edit' ? 'Preview' : 'Editor'}
-             </button>
-             {activeMemo && (
-                <KebabMenu 
-                  items={[
-                    { 
-                      label: "Download Markdown", 
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>,
-                      onClick: handleDownloadMarkdown 
-                    },
-                    { 
-                      label: "Delete Note", 
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
-                      onClick: () => setDeleteConfirmOpen(true),
-                      variant: 'danger'
-                    }
-                  ]}
-                />
-             )}
+            <button
+              onClick={() => setMode(mode === 'edit' ? 'preview' : 'edit')}
+              className="text-xs font-medium px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+            >
+              {mode === 'edit' ? 'Preview' : 'Editor'}
+            </button>
+            {activeMemo && (
+              <KebabMenu
+                items={[
+                  {
+                    label: "Download Markdown",
+                    icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>,
+                    onClick: handleDownloadMarkdown
+                  },
+                  {
+                    label: "Delete Note",
+                    icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
+                    onClick: () => setDeleteConfirmOpen(true),
+                    variant: 'danger'
+                  }
+                ]}
+              />
+            )}
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900 relative">
-           {!activeMemo ? (
-             <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                <p>Select or create a note.</p>
-             </div>
-           ) : (
-             <>
-               {mode === 'edit' ? (
-                 <CodeMirror
-                   value={activeMemo.content}
-                   height="100%"
-                   extensions={[markdown({ base: markdownLanguage, codeLanguages: languages })]}
-                   onChange={handleContentChange}
-                   theme={isDarkMode ? oneDark : 'light'}
-                   className="h-full text-base"
-                   style={getFontStyle()}
-                 />
-               ) : (
-                 <div 
-                   ref={previewRef}
-                   className="markdown-body p-8 h-full overflow-y-auto"
-                   dangerouslySetInnerHTML={renderPreview(activeMemo.content)} 
-                   style={getFontStyle()} 
-                 />
-               )}
-             </>
-           )}
+          {!activeMemo ? (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+              <p>Select or create a note.</p>
+            </div>
+          ) : (
+            <>
+              {mode === 'edit' ? (
+                <CodeMirror
+                  value={activeMemo.content}
+                  height="100%"
+                  extensions={[markdown({ base: markdownLanguage, codeLanguages: languages })]}
+                  onChange={handleContentChange}
+                  theme={isDarkMode ? oneDark : 'light'}
+                  className="h-full text-base"
+                  style={getFontStyle()}
+                />
+              ) : (
+                <div
+                  ref={previewRef}
+                  className="markdown-body p-8 h-full overflow-y-auto"
+                  dangerouslySetInnerHTML={renderPreview(activeMemo.content)}
+                  style={getFontStyle()}
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -529,13 +525,13 @@ function App() {
               Are you sure you want to delete <span className="font-semibold text-gray-700 dark:text-gray-300">"{activeMemo?.title || 'Untitled'}"</span>? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
-              <button 
+              <button
                 onClick={() => setDeleteConfirmOpen(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={confirmDelete}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
