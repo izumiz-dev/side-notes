@@ -54,7 +54,7 @@ export const useMemos = (domain: string | null, url: string | null, title: strin
     const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     
     const frontmatter = `---
-site: ${url}
+URL: ${url}
 title: ${title || ''}
 created_at: ${formattedDate}
 ---
