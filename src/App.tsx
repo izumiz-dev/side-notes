@@ -31,6 +31,7 @@ function App() {
   const [isResizing, setIsResizing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [memoMenuOpen, setMemoMenuOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -127,7 +128,27 @@ function App() {
     if (activeMemo) {
       deleteMemo(activeMemo.id);
       setDeleteConfirmOpen(false);
+      setMemoMenuOpen(false);
     }
+  };
+
+  const sanitizeFileName = (name: string) => {
+    return name.replace(/[<>:"/\\|?*]/g, '_');
+  };
+
+  const handleDownloadMarkdown = () => {
+    if (!activeMemo) return;
+    const fileName = `${sanitizeFileName(activeMemo.title || 'Untitled')}.md`;
+    const blob = new Blob([activeMemo.content], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", url);
+    downloadAnchorNode.setAttribute("download", fileName);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    URL.revokeObjectURL(url);
+    setMemoMenuOpen(false);
   };
 
   const renderPreview = (content: string) => {
@@ -303,7 +324,7 @@ function App() {
                />
             )}
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 relative">
              <button 
                onClick={() => setMode(mode === 'edit' ? 'preview' : 'edit')}
                className="text-xs font-medium px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
@@ -311,13 +332,39 @@ function App() {
                {mode === 'edit' ? 'Preview' : 'Editor'}
              </button>
              {activeMemo && (
-                <button 
-                  onClick={() => setDeleteConfirmOpen(true)}
-                  className="text-red-500 hover:text-red-700 p-1"
-                  title="Delete Note"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
+                <>
+                  <button 
+                    onClick={() => setMemoMenuOpen(!memoMenuOpen)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                    title="Menu"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                  </button>
+                  {memoMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setMemoMenuOpen(false)}></div>
+                      <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 py-1">
+                        <button 
+                          onClick={handleDownloadMarkdown}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                          Download Markdown
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setMemoMenuOpen(false);
+                            setDeleteConfirmOpen(true);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                          Delete Note
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </>
              )}
           </div>
         </div>
