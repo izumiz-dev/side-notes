@@ -193,6 +193,8 @@ const Options = () => {
   );
 };
 
+export default Options;
+
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Options />

@@ -220,14 +220,17 @@ function App() {
     }) };
   };
 
-  const getFontStyle = (): React.CSSProperties => ({
-    fontSize: `${fontSize}px`,
-    // Pass font names via CSS variables for fine-grained control in CSS
-    ['--font-user-sans' as any]: fontFamilySans || 'sans-serif',
-    ['--font-user-mono' as any]: fontFamilyMono || 'monospace',
-    // Apply sans-serif as base for the container
-    fontFamily: fontFamilySans || 'sans-serif',
-  });
+  const getFontStyle = (): React.CSSProperties => {
+    const style: React.CSSProperties & Record<string, string> = {
+      fontFamily: fontFamilySans || 'sans-serif',
+      fontSize: `${fontSize}px`,
+    };
+    // Pass font names via CSS variables
+    style['--font-user-sans'] = fontFamilySans || 'sans-serif';
+    style['--font-user-mono'] = fontFamilyMono || 'monospace';
+    
+    return style;
+  };
 
   if (!domain) {
     return (
