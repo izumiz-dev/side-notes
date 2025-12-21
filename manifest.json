@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Website Notes",
+  "version": "1.0.0",
+  "description": "A domain-specific markdown note-taking tool for websites.",
+  "action": {
+    "default_title": "Open Website Notes"
+  },
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "permissions": [
+    "sidePanel",
+    "tabs",
+    "storage",
+    "activeTab",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}
