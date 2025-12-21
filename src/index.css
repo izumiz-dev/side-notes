@@ -26,7 +26,9 @@
   }
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   margin: 0;
@@ -35,23 +37,43 @@ html, body, #root {
 }
 
 /* User font settings application */
-.cm-editor .cm-content, .cm-editor .cm-line, .markdown-body {
+.cm-editor .cm-content,
+.cm-editor .cm-line,
+.markdown-body {
   font-family: var(--font-user-sans, sans-serif);
 }
 
 /* Fix Markdown Lists */
 .markdown-body ul {
-  list-style-type: disc !important;
-  padding-left: 1.5em !important;
+  list-style-type: disc;
+  padding-left: 2em;
 }
 
 .markdown-body ol {
-  list-style-type: decimal !important;
-  padding-left: 1.5em !important;
+  list-style-type: decimal;
+  padding-left: 2em;
+}
+
+/* Fix Task Lists (remove bullets from checkboxes) */
+.markdown-body ul.contains-task-list,
+.markdown-body .task-list-item,
+.markdown-body li:has(input[type="checkbox"]) {
+  list-style-type: none !important;
+}
+
+.markdown-body .task-list-item input[type="checkbox"],
+.markdown-body li:has(input[type="checkbox"])>input[type="checkbox"] {
+  margin-left: -1.3em;
+  margin-right: 0.3em;
 }
 
 .markdown-body li {
-  display: list-item !important;
+  display: list-item;
+}
+
+.markdown-body .task-list-item {
+  display: flex;
+  align-items: center;
 }
 
 .markdown-body blockquote {
@@ -85,43 +107,77 @@ html, body, #root {
 /* Note */
 .markdown-alert-note {
   border-color: #0969da;
-  background-color: #f0f6fc; /* Light mode bg */
+  background-color: #f0f6fc;
+  /* Light mode bg */
 }
-.dark .markdown-alert-note { background-color: rgba(56, 139, 253, 0.1); }
-.markdown-alert-note .markdown-alert-title { color: #0969da; }
+
+.dark .markdown-alert-note {
+  background-color: rgba(56, 139, 253, 0.1);
+}
+
+.markdown-alert-note .markdown-alert-title {
+  color: #0969da;
+}
 
 /* Tip */
 .markdown-alert-tip {
   border-color: #1a7f37;
   background-color: #f0fdf4;
 }
-.dark .markdown-alert-tip { background-color: rgba(46, 160, 67, 0.1); }
-.markdown-alert-tip .markdown-alert-title { color: #1a7f37; }
+
+.dark .markdown-alert-tip {
+  background-color: rgba(46, 160, 67, 0.1);
+}
+
+.markdown-alert-tip .markdown-alert-title {
+  color: #1a7f37;
+}
 
 /* Important */
 .markdown-alert-important {
   border-color: #8250df;
   background-color: #f8f0fc;
 }
-.dark .markdown-alert-important { background-color: rgba(163, 113, 247, 0.1); }
-.markdown-alert-important .markdown-alert-title { color: #8250df; }
+
+.dark .markdown-alert-important {
+  background-color: rgba(163, 113, 247, 0.1);
+}
+
+.markdown-alert-important .markdown-alert-title {
+  color: #8250df;
+}
 
 /* Warning */
 .markdown-alert-warning {
   border-color: #9a6700;
   background-color: #fff8c5;
 }
-.dark .markdown-alert-warning { background-color: rgba(187, 128, 9, 0.1); }
-.markdown-alert-warning .markdown-alert-title { color: #9a6700; }
+
+.dark .markdown-alert-warning {
+  background-color: rgba(187, 128, 9, 0.1);
+}
+
+.markdown-alert-warning .markdown-alert-title {
+  color: #9a6700;
+}
 
 /* Caution */
 .markdown-alert-caution {
   border-color: #d1242f;
   background-color: #fff5f5;
 }
-.dark .markdown-alert-caution { background-color: rgba(218, 54, 51, 0.1); }
-.markdown-alert-caution .markdown-alert-title { color: #d1242f; }
 
-pre, code, kbd, samp {
+.dark .markdown-alert-caution {
+  background-color: rgba(218, 54, 51, 0.1);
+}
+
+.markdown-alert-caution .markdown-alert-title {
+  color: #d1242f;
+}
+
+pre,
+code,
+kbd,
+samp {
   font-family: var(--font-user-mono, monospace) !important;
 }
