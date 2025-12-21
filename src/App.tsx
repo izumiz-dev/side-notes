@@ -24,14 +24,61 @@ function App() {
     const saved = localStorage.getItem('sidebarOpen');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('sidebarWidth');
+    return saved !== null ? parseInt(saved, 10) : 256;
+  });
+  const [isResizing, setIsResizing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     localStorage.setItem('sidebarOpen', JSON.stringify(sidebarOpen));
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    localStorage.setItem('sidebarWidth', String(sidebarWidth));
+  }, [sidebarWidth]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      e.preventDefault(); // Prevent text selection and other defaults
+      
+      const newWidth = Math.max(150, Math.min(e.clientX, 600));
+      // Directly update DOM for performance
+      if (sidebarRef.current) {
+        sidebarRef.current.style.width = `${newWidth}px`;
+      }
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (!isResizing) return;
+      
+      setIsResizing(false);
+      document.body.style.cursor = 'default';
+      document.body.style.userSelect = 'auto';
+      
+      // Sync state at the end
+      const newWidth = Math.max(150, Math.min(e.clientX, 600));
+      setSidebarWidth(newWidth);
+    };
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
 
   useEffect(() => {
     const match = window.matchMedia('(prefers-color-scheme: dark)');
@@ -183,9 +230,17 @@ function App() {
   return (
     <div className={cn("flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden", isDarkMode ? 'dark' : '')}>
       {/* Sidebar (Memo List) */}
-      <div className={cn("flex flex-col border-r border-gray-200 dark:border-gray-700 transition-all duration-300", sidebarOpen ? "w-64" : "w-0 overflow-hidden")}>
+      <div 
+        ref={sidebarRef}
+        className={cn(
+          "flex flex-col border-r border-gray-200 dark:border-gray-700 relative group",
+          !isResizing && "transition-all duration-300", // Only animate when NOT resizing
+          !sidebarOpen && "w-0 overflow-hidden border-none"
+        )}
+        style={{ width: sidebarOpen ? sidebarWidth : 0 }}
+      >
          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-            <h2 className="font-bold text-sm truncate w-32" title={domain}>{domain}</h2>
+            <h2 className="font-bold text-sm truncate" style={{ width: Math.max(0, sidebarWidth - 100) }} title={domain}>{domain}</h2>
             <div className="flex gap-1">
                 <button onClick={createMemo} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="New Note">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -219,6 +274,12 @@ function App() {
               <div className="p-4 text-center text-gray-400 text-sm">No notes for {domain}</div>
             )}
          </div>
+         
+         {/* Resize Handle */}
+         <div
+            className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-blue-500/50 transition-colors z-50"
+            onMouseDown={() => setIsResizing(true)}
+         />
       </div>
 
       {/* Main Area */}
