@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useCurrentDomain } from './hooks/useCurrentDomain';
 import { useMemos } from './hooks/useMemos';
-import type { MemoMessage, Memo } from './types';
+import type { MemoMessage } from './types';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
@@ -11,7 +11,6 @@ import DOMPurify from 'dompurify';
 import 'github-markdown-css/github-markdown.css';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { getAllMemos, saveMemo } from './utils/storage';
 
 // Helper for classes
 const cn = (...inputs: (string | undefined | null | false)[]) => twMerge(clsx(inputs));
@@ -20,6 +19,8 @@ function App() {
   const { domain, url, title } = useCurrentDomain();
   const { memos, activeMemo, setActiveMemoId, createMemo, updateMemo, deleteMemo } = useMemos(domain, url, title);
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
+  
+  // Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('sidebarOpen');
     return saved !== null ? JSON.parse(saved) : true;
@@ -29,13 +30,19 @@ function App() {
     return saved !== null ? parseInt(saved, 10) : 256;
   });
   const [isResizing, setIsResizing] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [memoMenuOpen, setMemoMenuOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
+  // Theme & Font State
+  const [isDarkMode, setIsDarkMode] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [fontFamilySans, setFontFamilySans] = useState('sans-serif');
+  const [fontFamilyMono, setFontFamilyMono] = useState('monospace');
+  const [fontSize, setFontSize] = useState(16);
+
+  // UI State
+  const [memoMenuOpen, setMemoMenuOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  // Sidebar Persistence
   useEffect(() => {
     localStorage.setItem('sidebarOpen', JSON.stringify(sidebarOpen));
   }, [sidebarOpen]);
@@ -44,13 +51,13 @@ function App() {
     localStorage.setItem('sidebarWidth', String(sidebarWidth));
   }, [sidebarWidth]);
 
+  // Sidebar Resize Logic
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
-      e.preventDefault(); // Prevent text selection and other defaults
+      e.preventDefault(); 
       
       const newWidth = Math.max(150, Math.min(e.clientX, 600));
-      // Directly update DOM for performance
       if (sidebarRef.current) {
         sidebarRef.current.style.width = `${newWidth}px`;
       }
@@ -63,7 +70,6 @@ function App() {
       document.body.style.cursor = 'default';
       document.body.style.userSelect = 'auto';
       
-      // Sync state at the end
       const newWidth = Math.max(150, Math.min(e.clientX, 600));
       setSidebarWidth(newWidth);
     };
@@ -81,12 +87,12 @@ function App() {
     };
   }, [isResizing]);
 
+  // Theme & Security
   useEffect(() => {
     const match = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
     match.addEventListener('change', handler);
 
-    // Security: Force links to open in new tab and add security attributes
     DOMPurify.addHook('afterSanitizeAttributes', (node) => {
       if (node.tagName === 'A') {
         node.setAttribute('target', '_blank');
@@ -97,6 +103,38 @@ function App() {
     return () => match.removeEventListener('change', handler);
   }, []);
 
+  // Load Font Settings
+  useEffect(() => {
+    chrome.storage.local.get(['fontFamilySans', 'fontFamilyMono', 'fontSize'], (result) => {
+      if (typeof result.fontFamilySans === 'string') {
+        setFontFamilySans(result.fontFamilySans);
+      }
+      if (typeof result.fontFamilyMono === 'string') {
+        setFontFamilyMono(result.fontFamilyMono);
+      }
+      if (typeof result.fontSize === 'number') {
+        setFontSize(result.fontSize);
+      }
+    });
+
+    const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+      if (area === 'local') {
+        if (changes.fontFamilySans && typeof changes.fontFamilySans.newValue === 'string') {
+          setFontFamilySans(changes.fontFamilySans.newValue);
+        }
+        if (changes.fontFamilyMono && typeof changes.fontFamilyMono.newValue === 'string') {
+          setFontFamilyMono(changes.fontFamilyMono.newValue);
+        }
+        if (changes.fontSize && typeof changes.fontSize.newValue === 'number') {
+          setFontSize(changes.fontSize.newValue);
+        }
+      }
+    };
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    return () => chrome.storage.onChanged.removeListener(handleStorageChange);
+  }, []);
+
+  // Message Handling
   useEffect(() => {
     const handleMessage = (message: MemoMessage) => {
       if (message.type === 'OPEN_MEMO' && message.memoId) {
@@ -182,63 +220,14 @@ function App() {
     }) };
   };
 
-  const handleExport = async () => {
-    const allMemos = await getAllMemos();
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allMemos));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "website_notes_backup.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  };
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        if (Array.isArray(json)) {
-            for (const m of json) {
-                // Improved validation
-                if (
-                  m && 
-                  typeof m.id === 'string' && 
-                  typeof m.domain === 'string' &&
-                  typeof m.content === 'string' &&
-                  typeof m.title === 'string'
-                ) {
-                    // Sanitize input data to prevent storage pollution
-                    const sanitizedMemo: Memo = {
-                      id: m.id,
-                      title: m.title,
-                      content: m.content,
-                      domain: m.domain,
-                      url: typeof m.url === 'string' ? m.url : '',
-                      isUrlSpecific: !!m.isUrlSpecific,
-                      createdAt: typeof m.createdAt === 'number' ? m.createdAt : Date.now(),
-                      updatedAt: typeof m.updatedAt === 'number' ? m.updatedAt : Date.now(),
-                    };
-                    await saveMemo(sanitizedMemo);
-                }
-            }
-            // Trigger reload
-            window.location.reload();
-        }
-      } catch (err) {
-        console.error("Failed to parse JSON", err);
-        alert("Invalid JSON file");
-      }
-    };
-    reader.readAsText(file);
-  };
+  const getFontStyle = (): React.CSSProperties => ({
+    fontSize: `${fontSize}px`,
+    // Pass font names via CSS variables for fine-grained control in CSS
+    ['--font-user-sans' as any]: fontFamilySans || 'sans-serif',
+    ['--font-user-mono' as any]: fontFamilyMono || 'monospace',
+    // Apply sans-serif as base for the container
+    fontFamily: fontFamilySans || 'sans-serif',
+  });
 
   if (!domain) {
     return (
@@ -255,7 +244,7 @@ function App() {
         ref={sidebarRef}
         className={cn(
           "flex flex-col border-r border-gray-200 dark:border-gray-700 relative group",
-          !isResizing && "transition-all duration-300", // Only animate when NOT resizing
+          !isResizing && "transition-all duration-300", 
           !sidebarOpen && "w-0 overflow-hidden border-none"
         )}
         style={{ width: sidebarOpen ? sidebarWidth : 0 }}
@@ -266,19 +255,11 @@ function App() {
                 <button onClick={createMemo} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="New Note">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
-                <button onClick={() => setSettingsOpen(!settingsOpen)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <button onClick={() => chrome.runtime.openOptionsPage()} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
             </div>
          </div>
-         
-         {settingsOpen && (
-             <div className="p-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-2">
-                 <button onClick={handleExport} className="text-xs w-full text-left px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">Export All JSON</button>
-                 <button onClick={handleImportClick} className="text-xs w-full text-left px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">Import JSON</button>
-                 <input type="file" ref={fileInputRef} onChange={handleImportFile} className="hidden" accept=".json" />
-             </div>
-         )}
 
          <div className="flex-1 overflow-y-auto">
             {memos.map(memo => (
@@ -385,9 +366,10 @@ function App() {
                    onChange={handleContentChange}
                    theme={isDarkMode ? oneDark : 'light'}
                    className="h-full text-base"
+                   style={getFontStyle()}
                  />
                ) : (
-                 <div className="markdown-body p-8 h-full overflow-y-auto" dangerouslySetInnerHTML={renderPreview(activeMemo.content)} />
+                 <div className="markdown-body p-8 h-full overflow-y-auto" dangerouslySetInnerHTML={renderPreview(activeMemo.content)} style={getFontStyle()} />
                )}
              </>
            )}

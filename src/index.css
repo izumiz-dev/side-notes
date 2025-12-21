@@ -33,3 +33,12 @@ html, body, #root {
   padding: 0;
   overflow: hidden;
 }
+
+/* User font settings application */
+.cm-editor .cm-content, .cm-editor .cm-line, .markdown-body {
+  font-family: var(--font-user-sans, sans-serif);
+}
+
+pre, code, kbd, samp {
+  font-family: var(--font-user-mono, monospace) !important;
+}
