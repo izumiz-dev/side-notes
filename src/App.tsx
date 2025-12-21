@@ -31,6 +31,7 @@ function App() {
   });
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   // Theme & Font State
   const [isDarkMode, setIsDarkMode] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -133,6 +134,57 @@ function App() {
     chrome.storage.onChanged.addListener(handleStorageChange);
     return () => chrome.storage.onChanged.removeListener(handleStorageChange);
   }, []);
+
+  // Code Block Copy Button
+  useEffect(() => {
+    if (mode !== 'preview' || !previewRef.current) return;
+
+    const preElements = previewRef.current.querySelectorAll('pre');
+    preElements.forEach((pre) => {
+      // Check if button already exists
+      if (pre.querySelector('.copy-btn')) return;
+
+      // Make pre relative for absolute positioning of button and add group for hover effect
+      pre.style.position = 'relative';
+      pre.classList.add('group');
+
+      const button = document.createElement('button');
+      button.className = `
+        copy-btn absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-md border 
+        transition-all duration-200 opacity-0 group-hover:opacity-100
+        bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700
+        dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200
+      `.replace(/\s+/g, ' ').trim(); // Clean up newlines
+
+      button.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      `;
+      button.title = "Copy code";
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code')?.innerText || pre.innerText;
+        try {
+          await navigator.clipboard.writeText(code);
+          const originalIcon = button.innerHTML;
+          button.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500 dark:text-green-400">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          `;
+          setTimeout(() => {
+            button.innerHTML = originalIcon;
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy!', err);
+        }
+      });
+
+      pre.appendChild(button);
+    });
+  }, [mode, activeMemo?.content]);
 
   // Message Handling
   useEffect(() => {
@@ -372,7 +424,12 @@ function App() {
                    style={getFontStyle()}
                  />
                ) : (
-                 <div className="markdown-body p-8 h-full overflow-y-auto" dangerouslySetInnerHTML={renderPreview(activeMemo.content)} style={getFontStyle()} />
+                 <div 
+                   ref={previewRef}
+                   className="markdown-body p-8 h-full overflow-y-auto" 
+                   dangerouslySetInnerHTML={renderPreview(activeMemo.content)} 
+                   style={getFontStyle()} 
+                 />
                )}
              </>
            )}
