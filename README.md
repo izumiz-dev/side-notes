@@ -1,30 +1,27 @@
 # Website Notes (Chrome Extension)
 
-閲覧中のウェブサイト（ドメイン）ごとにメモを自動で整理・管理できる、Chrome サイドパネル型の Markdown メモアプリ。
+[日本語のドキュメントはこちら (Japanese)](./README_JA.md)
 
-Website Notes is a Chrome Extension that allows you to take markdown notes specific to the website (domain) you are currently visiting. It resides in the Chrome Side Panel, providing a seamless note-taking experience without leaving your current tab.
+**Website Notes** is a Chrome Extension that allows you to take markdown notes specific to the website (domain) you are currently visiting. It resides in the Chrome Side Panel, providing a seamless note-taking experience without leaving your current tab.
 
 ## Features
 
--   **Domain-Aware Notes:** アクティブなタブのドメインごとにメモを自動整理。
--   **URL-Specific Context:** 閲覧中の特定のURLに紐づくメモがある場合、バッジで通知。
--   **Badge Notifications:** 拡張機能アイコンにバッジを表示し、現在のページに関連するメモの存在を通知。
--   **Context Menu Integration:** 右クリックメニューから「このページのメモを開く」または「新規作成」が可能。
--   **High-Performance Editor:** CodeMirror 6 を採用した、シンタックスハイライト対応の Markdown エディタ。
--   **Live Preview:** GitHub スタイルのプレビュー表示。YAML Front Matter のテーブル表示にも対応。
--   **YAML Front Matter:** 新規メモ作成時に URL、タイトル、作成日時を自動でメタデータとして挿入。
--   **Dark/Light Mode:** システム設定に合わせたダークモード自動切替。
--   **Data Persistence:** `chrome.storage.local` を使用した自動保存（1000ms デバウンス処理付き）。
--   **Sidebar Persistence:** サイドバーの開閉状態をブラウザを閉じても保持。
--   **Export/Import:** メモ全データを JSON 形式でエクスポート・インポート可能。
-
-## Tech Stack
-
--   **Framework:** React 19 + TypeScript
--   **Build Tool:** Vite + CRXJS
--   **Styling:** Tailwind CSS v4
--   **Editor:** CodeMirror 6 (`@uiw/react-codemirror`)
--   **Markdown:** `marked` + `DOMPurify` + `github-markdown-css`
+-   **Domain-Aware Notes:** Notes are automatically organized by the domain of the active tab. You always see the notes relevant to the site you are browsing.
+-   **All Notes View:** You can switch the list to view all notes across all domains from the menu.
+-   **Context Menu Integration:** Right-click on any page to quickly "Create Note for this Page" or "Open Note for this Page".
+-   **Smart Notifications:** A badge on the extension icon notifies you if there are notes specifically for the current URL.
+-   **Markdown Editor:** Features a high-performance editor (CodeMirror 6) with syntax highlighting.
+-   **Live Preview:** Toggle preview mode to see your Markdown rendered with GitHub-like styling.
+-   **Metadata Automation:** New notes automatically include the URL, title, and creation date in the YAML front matter.
+-   **Auto-Save:** Your notes are saved automatically as you type.
+-   **Code Copy:** Easily copy code blocks in preview mode with a single click.
+-   **Customization:**
+    -   **Dark/Light Mode:** Adapts to your system's color scheme.
+    -   **Fonts:** Customize fonts for the editor and code blocks via the Options page.
+    -   **Resizable Sidebar:** Adjust the sidebar width to your liking.
+-   **Data Management:**
+    -   **Export/Import:** Backup and restore all your notes as JSON via the Options page.
+    -   **Download Markdown:** Download individual notes as `.md` files.
 
 ## Installation (Development)
 
@@ -45,11 +42,12 @@ Website Notes is a Chrome Extension that allows you to take markdown notes speci
 
 ## Usage
 
-1.  **Open the Panel:** 拡張機能アイコンをクリック、または右クリックメニューから起動。
-2.  **Create a Note:** 「＋」ボタンまたは右クリックメニュー「Create Note for this Page」から作成。
-3.  **Edit:** Markdown 形式で自由に記述。Front Matter は自動生成されます。
-4.  **Preview:** 「Preview」ボタンでレンダリング結果を確認。
-5.  **Manage:** サイドバーで現在のドメインに紐づくメモを切り替え。
+1.  **Open the Panel:** Click the extension icon or use the right-click menu ("Open Note for this Page").
+2.  **Create a Note:** Click the "New Note" option in the sidebar menu or use the right-click menu.
+3.  **Edit:** Write using standard Markdown syntax. Metadata is managed automatically at the top.
+4.  **Preview:** Click the "Preview" button to view the rendered note.
+5.  **Switch View:** Use the sidebar menu (︙) to toggle between "View Current Domain" and "View All Notes".
+6.  **Settings:** Access font settings and data export/import from the sidebar menu > "Settings".
 
 ## License
 
