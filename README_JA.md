@@ -2,9 +2,16 @@
 
 [English](./README.md)
 
+<img width="1664" height="1186" alt="image" src="https://github.com/user-attachments/assets/27ec6c31-2cd8-4c2b-b167-10d6336e9f95" />
+
 **Website Notes** は、閲覧中のウェブサイト（ドメイン）ごとにメモを自動で整理・管理できる、Chrome サイドパネル型の Markdown メモアプリです。
 
-<img width="1664" height="1186" alt="image" src="https://github.com/user-attachments/assets/27ec6c31-2cd8-4c2b-b167-10d6336e9f95" />
+## 📥 ダウンロード
+
+最新版は **[Releases ページ](https://github.com/izumiz-dev/side-notes/releases)** からダウンロードできます。
+1. `website-notes-vX.X.X.zip` をダウンロードしてください。
+2. ファイルを解凍します。
+3. Chrome に読み込ませます（手順は [インストール方法](#インストール方法-開発者向け) を参照）。
 
 ## 機能
 

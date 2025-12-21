@@ -2,10 +2,16 @@
 
 [日本語のドキュメントはこちら (Japanese)](./README_JA.md)
 
-**Website Notes** is a Chrome Extension that allows you to take markdown notes specific to the website (domain) you are currently visiting. It resides in the Chrome Side Panel, providing a seamless note-taking experience without leaving your current tab.
-
 <img width="1664" height="1186" alt="image" src="https://github.com/user-attachments/assets/27ec6c31-2cd8-4c2b-b167-10d6336e9f95" />
 
+**Website Notes** is a Chrome Extension that allows you to take markdown notes specific to the website (domain) you are currently visiting. It resides in the Chrome Side Panel, providing a seamless note-taking experience without leaving your current tab.
+
+## 📥 Download
+
+You can download the latest version from the **[Releases Page](https://github.com/izumiz-dev/side-notes/releases)**.
+1. Download `website-notes-vX.X.X.zip`.
+2. Unzip the file.
+3. Load the unpacked extension in Chrome (see [Installation](#installation-development)).
 
 ## Features
 
