@@ -4,6 +4,8 @@
 
 **Website Notes** は、閲覧中のウェブサイト（ドメイン）ごとにメモを自動で整理・管理できる、Chrome サイドパネル型の Markdown メモアプリです。
 
+<img width="1664" height="1186" alt="image" src="https://github.com/user-attachments/assets/27ec6c31-2cd8-4c2b-b167-10d6336e9f95" />
+
 ## 機能
 
 -   **ドメイン別メモ管理:** アクティブなタブのドメインごとにメモが自動で整理されます。
