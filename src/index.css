@@ -39,6 +39,89 @@ html, body, #root {
   font-family: var(--font-user-sans, sans-serif);
 }
 
+/* Fix Markdown Lists */
+.markdown-body ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+}
+
+.markdown-body ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+}
+
+.markdown-body li {
+  display: list-item !important;
+}
+
+.markdown-body blockquote {
+  border-left: 0.25em solid #dfe2e5;
+  color: #6a737d;
+  padding: 0 1em;
+  margin: 0 0 16px 0;
+}
+
+/* GitHub Alerts */
+.markdown-alert {
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  border-left: 0.25em solid;
+  border-radius: 6px;
+}
+
+.markdown-alert-title {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.markdown-alert-title svg {
+  margin-right: 8px;
+  fill: currentColor;
+}
+
+/* Note */
+.markdown-alert-note {
+  border-color: #0969da;
+  background-color: #f0f6fc; /* Light mode bg */
+}
+.dark .markdown-alert-note { background-color: rgba(56, 139, 253, 0.1); }
+.markdown-alert-note .markdown-alert-title { color: #0969da; }
+
+/* Tip */
+.markdown-alert-tip {
+  border-color: #1a7f37;
+  background-color: #f0fdf4;
+}
+.dark .markdown-alert-tip { background-color: rgba(46, 160, 67, 0.1); }
+.markdown-alert-tip .markdown-alert-title { color: #1a7f37; }
+
+/* Important */
+.markdown-alert-important {
+  border-color: #8250df;
+  background-color: #f8f0fc;
+}
+.dark .markdown-alert-important { background-color: rgba(163, 113, 247, 0.1); }
+.markdown-alert-important .markdown-alert-title { color: #8250df; }
+
+/* Warning */
+.markdown-alert-warning {
+  border-color: #9a6700;
+  background-color: #fff8c5;
+}
+.dark .markdown-alert-warning { background-color: rgba(187, 128, 9, 0.1); }
+.markdown-alert-warning .markdown-alert-title { color: #9a6700; }
+
+/* Caution */
+.markdown-alert-caution {
+  border-color: #d1242f;
+  background-color: #fff5f5;
+}
+.dark .markdown-alert-caution { background-color: rgba(218, 54, 51, 0.1); }
+.markdown-alert-caution .markdown-alert-title { color: #d1242f; }
+
 pre, code, kbd, samp {
   font-family: var(--font-user-mono, monospace) !important;
 }
