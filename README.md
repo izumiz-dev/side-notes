@@ -4,6 +4,9 @@
 
 **Website Notes** is a Chrome Extension that allows you to take markdown notes specific to the website (domain) you are currently visiting. It resides in the Chrome Side Panel, providing a seamless note-taking experience without leaving your current tab.
 
+<img width="1664" height="1186" alt="image" src="https://github.com/user-attachments/assets/27ec6c31-2cd8-4c2b-b167-10d6336e9f95" />
+
+
 ## Features
 
 -   **Domain-Aware Notes:** Notes are automatically organized by the domain of the active tab. You always see the notes relevant to the site you are browsing.
