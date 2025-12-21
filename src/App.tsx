@@ -15,9 +15,56 @@ import { twMerge } from 'tailwind-merge';
 // Helper for classes
 const cn = (...inputs: (string | undefined | null | false)[]) => twMerge(clsx(inputs));
 
+interface MenuItem {
+  label: string;
+  icon?: React.ReactNode;
+  onClick: () => void;
+  variant?: 'default' | 'danger';
+}
+
+function KebabMenu({ items, title = "Menu" }: { items: MenuItem[], title?: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+        title={title}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+      </button>
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+          <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 py-1">
+            {items.map((item, i) => (
+              <button 
+                key={i}
+                onClick={() => {
+                  setIsOpen(false);
+                  item.onClick();
+                }}
+                className={cn(
+                  "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700",
+                  item.variant === 'danger' ? "text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-300"
+                )}
+              >
+                {item.icon}
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const { domain, url, title } = useCurrentDomain();
-  const { memos, activeMemo, setActiveMemoId, createMemo, updateMemo, deleteMemo } = useMemos(domain, url, title);
+  const [viewMode, setViewMode] = useState<'domain' | 'all'>('domain');
+  const { memos, activeMemo, setActiveMemoId, createMemo, updateMemo, deleteMemo } = useMemos(domain, url, title, viewMode);
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
   
   // Sidebar State
@@ -40,7 +87,6 @@ function App() {
   const [fontSize, setFontSize] = useState(16);
 
   // UI State
-  const [memoMenuOpen, setMemoMenuOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   // Sidebar Persistence
@@ -64,14 +110,14 @@ function App() {
       }
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
       if (!isResizing) return;
       
       setIsResizing(false);
       document.body.style.cursor = 'default';
       document.body.style.userSelect = 'auto';
       
-      const newWidth = Math.max(150, Math.min(e.clientX, 600));
+      const newWidth = sidebarRef.current ? sidebarRef.current.offsetWidth : sidebarWidth;
       setSidebarWidth(newWidth);
     };
 
@@ -86,7 +132,7 @@ function App() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isResizing]);
+  }, [isResizing, sidebarWidth]);
 
   // Theme & Security
   useEffect(() => {
@@ -141,10 +187,8 @@ function App() {
 
     const preElements = previewRef.current.querySelectorAll('pre');
     preElements.forEach((pre) => {
-      // Check if button already exists
       if (pre.querySelector('.copy-btn')) return;
 
-      // Make pre relative for absolute positioning of button and add group for hover effect
       pre.style.position = 'relative';
       pre.classList.add('group');
 
@@ -154,10 +198,10 @@ function App() {
         transition-all duration-200 opacity-0 group-hover:opacity-100
         bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700
         dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200
-      `.replace(/\s+/g, ' ').trim(); // Clean up newlines
+      `.replace(/\s+/g, ' ').trim();
 
       button.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
@@ -170,7 +214,7 @@ function App() {
           await navigator.clipboard.writeText(code);
           const originalIcon = button.innerHTML;
           button.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500 dark:text-green-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="text-green-500 dark:text-green-400">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           `;
@@ -218,7 +262,6 @@ function App() {
     if (activeMemo) {
       deleteMemo(activeMemo.id);
       setDeleteConfirmOpen(false);
-      setMemoMenuOpen(false);
     }
   };
 
@@ -238,11 +281,9 @@ function App() {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
     URL.revokeObjectURL(url);
-    setMemoMenuOpen(false);
   };
 
   const renderPreview = (content: string) => {
-    // Basic Front Matter parsing
     const frontMatterRegex = /^---\n([\s\S]+?)\n---/;
     const match = content.match(frontMatterRegex);
 
@@ -277,10 +318,8 @@ function App() {
       fontFamily: fontFamilySans || 'sans-serif',
       fontSize: `${fontSize}px`,
     };
-    // Pass font names via CSS variables
     style['--font-user-sans'] = fontFamilySans || 'sans-serif';
     style['--font-user-mono'] = fontFamilyMono || 'monospace';
-    
     return style;
   };
 
@@ -305,15 +344,28 @@ function App() {
         style={{ width: sidebarOpen ? sidebarWidth : 0 }}
       >
          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-            <h2 className="font-bold text-sm truncate" style={{ width: Math.max(0, sidebarWidth - 100) }} title={domain}>{domain}</h2>
-            <div className="flex gap-1">
-                <button onClick={createMemo} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="New Note">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                </button>
-                <button onClick={() => chrome.runtime.openOptionsPage()} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                </button>
-            </div>
+            <h2 className="font-bold text-sm truncate" style={{ width: Math.max(0, sidebarWidth - 64) }} title={viewMode === 'all' ? 'All Notes' : (domain || '')}>
+              {viewMode === 'all' ? 'All Notes' : (domain || 'No context')}
+            </h2>
+            <KebabMenu 
+              items={[
+                { 
+                  label: "New Note", 
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+                  onClick: createMemo 
+                },
+                { 
+                  label: viewMode === 'all' ? "View Domain Notes" : "View All Notes", 
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
+                  onClick: () => setViewMode(viewMode === 'all' ? 'domain' : 'all') 
+                },
+                { 
+                  label: "Settings", 
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
+                  onClick: () => chrome.runtime.openOptionsPage() 
+                }
+              ]}
+            />
          </div>
 
          <div className="flex-1 overflow-y-auto">
@@ -324,11 +376,14 @@ function App() {
                 className={cn("p-3 cursor-pointer border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800", activeMemo?.id === memo.id && "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500")}
               >
                 <div className="font-medium text-sm truncate">{memo.title || "Untitled"}</div>
-                <div className="text-xs text-gray-400 mt-1">{new Date(memo.updatedAt).toLocaleDateString()}</div>
+                <div className="flex justify-between items-center mt-1">
+                  <div className="text-[10px] text-gray-400 truncate flex-1 mr-2">{viewMode === 'all' ? memo.domain : new Date(memo.updatedAt).toLocaleDateString()}</div>
+                  {viewMode === 'all' && <div className="text-[10px] text-gray-300">{new Date(memo.updatedAt).toLocaleDateString()}</div>}
+                </div>
               </div>
             ))}
             {memos.length === 0 && (
-              <div className="p-4 text-center text-gray-400 text-sm">No notes for {domain}</div>
+              <div className="p-4 text-center text-gray-400 text-sm">No notes found.</div>
             )}
          </div>
          
@@ -368,39 +423,21 @@ function App() {
                {mode === 'edit' ? 'Preview' : 'Editor'}
              </button>
              {activeMemo && (
-                <>
-                  <button 
-                    onClick={() => setMemoMenuOpen(!memoMenuOpen)}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-                    title="Menu"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                  </button>
-                  {memoMenuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setMemoMenuOpen(false)}></div>
-                      <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 py-1">
-                        <button 
-                          onClick={handleDownloadMarkdown}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                          Download Markdown
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setMemoMenuOpen(false);
-                            setDeleteConfirmOpen(true);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                          Delete Note
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </>
+                <KebabMenu 
+                  items={[
+                    { 
+                      label: "Download Markdown", 
+                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>,
+                      onClick: handleDownloadMarkdown 
+                    },
+                    { 
+                      label: "Delete Note", 
+                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
+                      onClick: () => setDeleteConfirmOpen(true),
+                      variant: 'danger'
+                    }
+                  ]}
+                />
              )}
           </div>
         </div>
@@ -426,7 +463,7 @@ function App() {
                ) : (
                  <div 
                    ref={previewRef}
-                   className="markdown-body p-8 h-full overflow-y-auto" 
+                   className="markdown-body p-8 h-full overflow-y-auto"
                    dangerouslySetInnerHTML={renderPreview(activeMemo.content)} 
                    style={getFontStyle()} 
                  />

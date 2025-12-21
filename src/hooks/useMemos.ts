@@ -1,34 +1,45 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { Memo } from '../types';
-import { getMemosByDomain, saveMemo, deleteMemo as deleteMemoFromStorage } from '../utils/storage';
+import { getAllMemos, getMemosByDomain, saveMemo, deleteMemo as deleteMemoFromStorage } from '../utils/storage';
 
-export const useMemos = (domain: string | null, url: string | null, title: string | null) => {
+export const useMemos = (domain: string | null, url: string | null, title: string | null, viewMode: 'domain' | 'all' = 'domain') => {
   const [memos, setMemos] = useState<Memo[]>([]);
   const [activeMemoId, setActiveMemoId] = useState<string | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const loadMemos = useCallback(async (d: string) => {
-    const loaded = await getMemosByDomain(d);
+  const loadMemos = useCallback(async () => {
+    let loaded: Memo[];
+    if (viewMode === 'all') {
+      loaded = await getAllMemos();
+      loaded.sort((a, b) => b.updatedAt - a.updatedAt);
+    } else if (domain) {
+      loaded = await getMemosByDomain(domain);
+    } else {
+      loaded = [];
+    }
+    
     setMemos(loaded);
     // Automatically select the most recently updated memo if none selected
     if (loaded.length > 0 && !activeMemoId) {
       setActiveMemoId(loaded[0].id);
     }
-  }, [activeMemoId]);
+  }, [domain, viewMode, activeMemoId]);
 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchMemos = async (d: string | null) => {
-      if (!d) {
-        if (isMounted) {
-          setMemos([]);
-          setActiveMemoId(null);
-        }
-        return;
+    const fetchMemos = async () => {
+      let loaded: Memo[];
+      if (viewMode === 'all') {
+        loaded = await getAllMemos();
+        loaded.sort((a, b) => b.updatedAt - a.updatedAt);
+      } else if (domain) {
+        loaded = await getMemosByDomain(domain);
+      } else {
+        loaded = [];
       }
-      const loaded = await getMemosByDomain(d);
+
       if (isMounted) {
         setMemos(loaded);
         if (loaded.length > 0 && !activeMemoId) {
@@ -37,7 +48,7 @@ export const useMemos = (domain: string | null, url: string | null, title: strin
       }
     };
 
-    fetchMemos(domain);
+    fetchMemos();
 
     return () => {
       isMounted = false;
@@ -45,7 +56,7 @@ export const useMemos = (domain: string | null, url: string | null, title: strin
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [domain, activeMemoId]);
+  }, [domain, viewMode, activeMemoId]);
 
   const createMemo = async () => {
     if (!domain || !url) return;
@@ -77,7 +88,7 @@ created_at: ${formattedDate}
       updatedAt: Date.now(),
     };
     await saveMemo(newMemo);
-    await loadMemos(domain);
+    await loadMemos();
     setActiveMemoId(newMemo.id);
   };
 
@@ -96,14 +107,12 @@ created_at: ${formattedDate}
   }, []);
 
   const deleteMemo = async (id: string) => {
-    if (!domain) return;
-    
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
     await deleteMemoFromStorage(id);
-    await loadMemos(domain);
+    await loadMemos();
     if (activeMemoId === id) {
       setActiveMemoId(null);
     }
