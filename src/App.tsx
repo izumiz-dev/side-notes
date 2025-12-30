@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useCurrentDomain } from './hooks/useCurrentDomain';
 import { useMemos } from './hooks/useMemos';
 import type { MemoMessage } from './types';
@@ -75,6 +75,38 @@ const ALERT_TITLES: Record<string, string> = {
   important: 'Important',
   warning: 'Warning',
   caution: 'Caution'
+};
+
+const renderPreview = (content: string) => {
+  const frontMatterRegex = /^---\n([\s\S]+?)\n---/;
+  const match = content.match(frontMatterRegex);
+
+  let processedContent = content;
+
+  if (match) {
+    const frontMatter = match[1];
+    const rows = frontMatter.split('\n').filter(line => line.trim() !== '');
+    let tableHtml = '<table class="front-matter-table mb-4 border-collapse w-full text-sm"><tbody>';
+
+    rows.forEach(row => {
+      const parts = row.split(':');
+      if (parts.length >= 2) {
+        const key = parts[0].trim();
+        const value = parts.slice(1).join(':').trim();
+        tableHtml += `<tr class="border-b border-gray-200 dark:border-gray-700"><td class="py-1 pr-2 font-semibold text-gray-600 dark:text-gray-400 select-none w-24">${key}</td><td class="py-1 text-gray-800 dark:text-gray-200 break-all">${value}</td></tr>`;
+      }
+    });
+
+    tableHtml += '</tbody></table>';
+    processedContent = content.replace(frontMatterRegex, tableHtml);
+  }
+
+  const rawMarkup = marked.parse(processedContent);
+  return {
+    __html: DOMPurify.sanitize(rawMarkup as string, {
+      ADD_ATTR: ['target', 'rel'],
+    })
+  };
 };
 
 function App() {
@@ -287,6 +319,11 @@ function App() {
     }
   }, [setActiveMemoId, createMemo]);
 
+  const previewHtml = useMemo(() => {
+    if (!activeMemo) return { __html: '' };
+    return renderPreview(activeMemo.content);
+  }, [activeMemo]);
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (activeMemo) {
       updateMemo({ ...activeMemo, title: e.target.value, updatedAt: Date.now() });
@@ -324,37 +361,7 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  const renderPreview = (content: string) => {
-    const frontMatterRegex = /^---\n([\s\S]+?)\n---/;
-    const match = content.match(frontMatterRegex);
 
-    let processedContent = content;
-
-    if (match) {
-      const frontMatter = match[1];
-      const rows = frontMatter.split('\n').filter(line => line.trim() !== '');
-      let tableHtml = '<table class="front-matter-table mb-4 border-collapse w-full text-sm"><tbody>';
-
-      rows.forEach(row => {
-        const parts = row.split(':');
-        if (parts.length >= 2) {
-          const key = parts[0].trim();
-          const value = parts.slice(1).join(':').trim();
-          tableHtml += `<tr class="border-b border-gray-200 dark:border-gray-700"><td class="py-1 pr-2 font-semibold text-gray-600 dark:text-gray-400 select-none w-24">${key}</td><td class="py-1 text-gray-800 dark:text-gray-200 break-all">${value}</td></tr>`;
-        }
-      });
-
-      tableHtml += '</tbody></table>';
-      processedContent = content.replace(frontMatterRegex, tableHtml);
-    }
-
-    const rawMarkup = marked.parse(processedContent);
-    return {
-      __html: DOMPurify.sanitize(rawMarkup as string, {
-        ADD_ATTR: ['target', 'rel'],
-      })
-    };
-  };
 
   const getFontStyle = (): React.CSSProperties => {
     const style: React.CSSProperties & Record<string, string> = {
@@ -507,7 +514,7 @@ function App() {
                 <div
                   ref={previewRef}
                   className="markdown-body p-8 h-full overflow-y-auto"
-                  dangerouslySetInnerHTML={renderPreview(activeMemo.content)}
+                  dangerouslySetInnerHTML={previewHtml}
                   style={getFontStyle()}
                 />
               )}
