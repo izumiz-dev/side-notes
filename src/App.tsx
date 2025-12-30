@@ -236,7 +236,7 @@ function App() {
       const button = document.createElement('button');
       button.className = `
         copy-btn absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-md border 
-        transition-all duration-200 opacity-0 group-hover:opacity-100
+        transition-all duration-200
         bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700
         dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200
       `.replace(/\s+/g, ' ').trim();
