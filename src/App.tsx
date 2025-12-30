@@ -111,9 +111,15 @@ const renderPreview = (content: string) => {
 
 function App() {
   const { domain, url, title } = useCurrentDomain();
-  const [viewMode, setViewMode] = useState<'domain' | 'all'>('domain');
+  const [viewMode, setViewMode] = useState<'domain' | 'all'>(() => {
+    const saved = localStorage.getItem('viewMode');
+    return (saved === 'all' || saved === 'domain') ? saved : 'domain';
+  });
   const { memos, activeMemo, setActiveMemoId, createMemo, updateMemo, deleteMemo } = useMemos(domain, url, title, viewMode);
-  const [mode, setMode] = useState<'edit' | 'preview'>('edit');
+  const [mode, setMode] = useState<'edit' | 'preview'>(() => {
+    const saved = localStorage.getItem('mode');
+    return (saved === 'edit' || saved === 'preview') ? saved : 'edit';
+  });
 
   // Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -141,6 +147,14 @@ function App() {
   useEffect(() => {
     localStorage.setItem('sidebarOpen', JSON.stringify(sidebarOpen));
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    localStorage.setItem('viewMode', viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem('mode', mode);
+  }, [mode]);
 
   useEffect(() => {
     localStorage.setItem('sidebarWidth', String(sidebarWidth));
@@ -301,7 +315,7 @@ function App() {
 
       pre.appendChild(button);
     });
-  }, [mode, activeMemo?.content]);
+  }, [mode, activeMemo?.content, activeMemo]);
 
   // Message Handling
   useEffect(() => {
@@ -512,6 +526,7 @@ function App() {
                 />
               ) : (
                 <div
+                  key={activeMemo.id}
                   ref={previewRef}
                   className="markdown-body p-8 h-full overflow-y-auto"
                   dangerouslySetInnerHTML={previewHtml}
